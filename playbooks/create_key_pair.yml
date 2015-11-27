@@ -1,0 +1,28 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars_files:
+    - ../config/config.yml
+
+  tasks:
+
+    - name: Destroy old EC2 SSH key pair
+      ec2_key:
+        name: "{{ prefix }}-deployment-key"
+        ec2_region: "{{ ec2_region }}"
+        wait: yes
+        state: absent
+
+    - name: Create EC2 SSH key pair
+      ec2_key:
+        name: "{{ prefix }}-deployment-key"
+        ec2_region: "{{ ec2_region }}"
+        state: present
+        wait: yes
+      register: keypair_deployment
+
+    - name: Write SSH deployment key to local file
+      copy: content="{{ keypair_deployment.key.private_key }}" dest="{{ file_deployment_key }}" mode=0700

@@ -1,0 +1,38 @@
+---
+
+- hosts: all_instances
+  name: Post deployment configuration for all instances
+  user: ubuntu
+  sudo: yes
+  gather_facts: true
+
+  vars_files:
+    - ../config/config.yml
+
+  tasks:
+
+    - name: Replace EC2 SSH keys with user defined ones
+      authorized_key: user=ubuntu key="{{ ssh_authorized_key }}" state=present exclusive=yes
+      when: ssh_authorized_key is defined
+
+
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars_files:
+    - ../config/config.yml
+
+  tasks:
+
+    - name: Destroy old EC2 SSH key pair
+      ec2_key:
+        name: "{{ prefix }}-deployment-key"
+        ec2_region: "{{ ec2_region }}"
+        wait: yes
+        state: absent
+
+    - name: Remove local deployment SSH key file
+      file: path="{{ file_deployment_key }}" state=absent
+

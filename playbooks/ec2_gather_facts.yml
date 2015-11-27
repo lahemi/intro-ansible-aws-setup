@@ -1,0 +1,11 @@
+---
+
+- hosts: all_instances
+  name: Gather IP address of created EC2 instances to a local file
+  gather_facts: true
+
+ tasks:
+
+    - name: Gather facts of EC2 instances to a local file
+      action: ec2_facts
+

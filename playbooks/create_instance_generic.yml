@@ -1,0 +1,66 @@
+---
+
+- hosts: localhost
+  connection: local
+  #gather_facts: True
+  gather_facts: False
+
+  vars_files:
+    - ../config/config.yml
+
+  tasks:
+
+    - name: Setup a set of generic instances
+      ec2:
+        key_name: "{{ prefix }}-deployment-key"
+        group: [ "{{ prefix }}-generic" ]
+        instance_type: "{{ ec2_instance_type_generic }}"
+        ec2_region: "{{ ec2_region }}"
+        image: "{{ ec2_ami_id_generic }}"
+        zone: "{{ item }}"
+        wait: true
+        count: "{{ ec2_instance_count_generic }}"
+        instance_tags:
+          Name: "{{ prefix }}-generic-{{ item  }}"
+      register: ec2_generic_results
+      with_items: "{{ ec2_zones }}"
+
+    # using with_items (when setting up instances to many zones) returns a multidimensional array
+    # so we want to flatten it a little bit for future use
+    # see data structure here: http://docs.ansible.com/ansible/playbooks_loops.html#using-register-with-a-loop
+    - set_fact:
+        ec2_generic: "{{ ec2_generic_results.results|map(attribute='instances')|list }}"
+
+    - name: Wait until SSH is available
+      local_action:
+        module: wait_for
+        host: "{{ item.public_ip }}"
+        port: 22
+        delay: 5
+        timeout: 320
+        state: started
+      with_items: ec2_generic
+
+    - name: Add all generic instance public IPs to generic host group
+      add_host: hostname={{ item.public_ip }} groups=generic
+      with_items: ec2_generic
+
+    - name: Add all generic instance public IPs to global EC2 host group
+      add_host: hostname={{ item.public_ip }} groups=all_instances
+      with_items: ec2_generic
+
+    - name: Remove the old AWS DNS names
+      file:
+        path="{{ ec2_endpoint_list }}"
+        state=absent
+
+    - name: Store the AWS DNS names in a local file
+      lineinfile:
+         dest="{{ ec2_endpoint_list }}"
+         line="{{ item.public_dns_name }}"
+         state=present
+         create=True
+         insertafter=EOF
+         mode=0400
+      with_items: ec2_generic
+

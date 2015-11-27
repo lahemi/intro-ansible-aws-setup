@@ -1,0 +1,12 @@
+---
+
+- hosts: generic
+  name: Configure generic instances
+  user: "{{ ec2_login_username }}"
+  sudo: yes
+  gather_facts: true
+  vars_files:
+    - ../config/config.yml
+  roles:
+    - generic-provision
+

@@ -1,0 +1,20 @@
+---
+
+# A small example on how to easily provision the EC2 instances
+
+- name: Update packages
+  apt: upgrade=dist update_cache=yes
+
+- name: Install pre-requisite packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - ntp
+    - vim
+    - unzip
+    - openjdk-7-jdk
+
+- name: Enable and start NTP
+  service: name=ntp
+           state=started
+           enabled=yes
+
