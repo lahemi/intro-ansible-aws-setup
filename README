@@ -1,36 +1,36 @@
 
 Where to start:
 
-    You'll need SSH keys you'll be using to access the EC2 instances.
+    * SSH keys for accessing the EC2 instances
 
-    You'll need the AWS access keys (see ansible_user_credentials and deploy.bash)
-    For example, create a new user with ithe access keys, then a group with
-        arn:aws:iam::aws:policy/AmazonEC2FullAccess
-    as the privileges, adding your new user to this group. Do not give this user
-    a password or any such - keep it strictly as a user for CLI|provision tools.
+    * AWS access keys (see ansible_user_credentials and deploy.bash)
+      For example, create a new user with ithe access keys, then a group
+      with  arn:aws:iam::aws:policy/AmazonEC2FullAccess  as the privileges,
+      adding your new user to this group. Do not give this user a password
+      or any such - keep it strictly as a user for CLI|provision tools.
 
-    After these two pre-requisites have been carried out, you are ready to dig
-    in the Ansible part.  Start by reading main_playbook.yml and config/config.yml,
-    changing especially the latter where appropriate.
+    * After these two pre-requisites are met, you are ready to dig in
+      the Ansible part. Start by reading main_playbook.yml and
+      config/config.yml, changing especially the latter where appropriate.
 
-    It is recommended you start with single EC2 instance in a single availability
-    zone - this setup is not run in parallel, meaning the instance provisioning
-    part takes up inconveniently much time.
+    * It is recommended you start with single EC2 instance in a single
+      availability zone - this setup is not run in parallel, meaning
+      the instance provisioning part takes up inconveniently much time.
 
-    If you want to test things much faster, you can always just comment out
-    the line in main_playbook.yml where instance provisioning YAML is included.
+    * If you want to test things much faster, you can always just comment out
+      the line in main_playbook.yml where instance provisioning YAML is included.
 
 
 
 Steps the playbooks go through (see main_playbook.yml for entry point):
 
     1. Creation of a temporary SSH key pair for the duration of the setup
-        (Instead of doing like this, you could use Vault for all this)
+       (Instead of this, you could use Vault for the keys).
 
-    2. Creation a simple example security group.
+    2. Creation of a simple example security group.
 
-    3. Setup the desired EC2 instances, also storing their AWS DNS names
-       for easier user access over SSH later on.
+    3. Setup the desired EC2 instances, also storing their AWS DNS
+       names for easier user access over SSH later on.
 
     4. Provision the EC2 instances.
        (See playbooks/roles/generic-provision/tasks/main.yml for a simple example)
@@ -40,13 +40,13 @@ Steps the playbooks go through (see main_playbook.yml for entry point):
 
 
 
-After your EC2 instances are up and running, you can access them over SSH
+Once your EC2 instances are up and running, you can access them over SSH
 using the ec2_login_username you've provided in config/config.yml.
 The AWS DNS names are stored in the file you've set for ec2_endpoint_list.
 
 
 
 For this exercise it is recommended you have the AWS management console open,
-to follow what happens. This example is also currently missing a parameterized
+to follow what happens. This example also does not include a parameterized
 playbook for neatly terminating the instances.
 
